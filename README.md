@@ -2,4 +2,4 @@
 
 ## How to Use
 
-Place evaluate.py into the root directory of your game files. Then, run the script from a terminal.
+Install requirements.txt within a virtual environment, then run evaluate.py from the root directory of your game files.

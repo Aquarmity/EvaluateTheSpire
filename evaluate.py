@@ -1,12 +1,18 @@
 import json
 from glob import glob
+import matplotlib.pyplot as plt
 
 CHARACTERS = ['IRONCLAD', 'THE_SILENT', 'DEFECT', 'WATCHER']
+ROOM_TYPE_KEY = {'M': 'Monster', '?': '?', '$': 'Shop', 'T': 'Treasure', 'R': 'Rest', 'E': 'Elite', 'BOSS': 'Boss'}
 
 killers = {}
 act_1_boss_wins = {'Hexaghost': 0, 'Slime Boss': 0, 'The Guardian': 0}
 act_2_boss_wins = {'Automaton': 0, 'Champ': 0, 'Collector': 0}
 act_3_boss_wins = {'Awakened One': 0, 'Donu and Deca': 0, 'Time Eater': 0}
+rooms_encountered = {'M': 0, '?': 0, '$': 0, 'T': 0, 'R': 0, 'E': 0, 'BOSS': 0}
+
+run_count = 0
+floor_deaths = [0] * 57
 
 for char in CHARACTERS:
     for fname in glob('runs/' + char + '/*.run'):
@@ -27,10 +33,17 @@ for char in CHARACTERS:
                 act_2_boss_wins[enemy['enemies']] += 1
             if enemy['floor'] == 50 and floor_reached > 50:
                 act_3_boss_wins[enemy['enemies']] += 1
+
+        for room in rooms_encountered:
+            rooms_encountered[room] += data['path_taken'].count(room)
+        run_count += 1
+
+        floor_deaths[data['floor_reached']] += 1
+
         file.close()
 
 killers_sorted = {k: v for k, v in sorted(killers.items(), key=lambda item: item[1], reverse=True)}
-print("Deaths per Enemy:")
+print('Deaths per Enemy:')
 for k in killers_sorted:
     print(k + ': ', killers_sorted[k])
 
@@ -44,3 +57,34 @@ print('\nSuccess Rates:')
 print_boss_success_rate(act_1_boss_wins)
 print_boss_success_rate(act_2_boss_wins)
 print_boss_success_rate(act_3_boss_wins)
+
+print('\nAverage Run:')
+
+total_rooms = 0
+for room in rooms_encountered:
+    total_rooms += rooms_encountered[room]
+    print(ROOM_TYPE_KEY[room] + ': ', round(rooms_encountered[room] / run_count, 2))
+print('Average run length:', round(total_rooms / run_count, 2))
+
+survivors = [run_count]
+for deaths in floor_deaths:
+    survivors.append(survivors[-1] - deaths)
+survivors.pop()
+
+plt.figure(figsize=(12, 6))
+plt.subplot(121)
+plt.plot(range(57), survivors)
+plt.xlim([0, 56])
+plt.ylim([0, max(survivors) * 1.05])
+plt.xlabel('Floor')
+plt.ylabel('Surviving Runs')
+plt.title('Run Survivorship')
+plt.grid(True)
+plt.subplot(122)
+plt.bar(range(57), floor_deaths, width=1.0)
+plt.xlim([0, 56])
+plt.ylim([0, max(floor_deaths) * 1.05])
+plt.xlabel('Floor')
+plt.ylabel('# Runs')
+plt.title('Run Lengths')
+plt.show()
