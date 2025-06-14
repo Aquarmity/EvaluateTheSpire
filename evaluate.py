@@ -51,9 +51,10 @@ for k in killers_sorted:
 
 print('\nBoss Success Rates:')
 for boss in boss_wins:
-    if boss in killers:
-        success_rate = f"{(boss_wins[boss]/(boss_wins[boss] + killers[boss])) * 100:.2f}"
-        print(boss + ': ', boss_wins[boss], '/', (boss_wins[boss] + killers[boss]), '=', success_rate + '%')
+    if boss not in killers:
+        killers[boss] = 0
+    success_rate = f"{(boss_wins[boss]/(boss_wins[boss] + killers[boss])) * 100:.2f}"
+    print(boss + ': ', boss_wins[boss], '/', (boss_wins[boss] + killers[boss]), '=', success_rate + '%')
 
 print('\nAverage Run:')
 
